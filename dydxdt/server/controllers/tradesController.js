@@ -1,9 +1,16 @@
 const Trade = require('../models/Trade');
 const User = require('../models/User');
 const {
-  calcWinRate, calcProfitFactor, calcExpectancy,
-  calcSharpeRatio, calcMaxDrawdown, calcEquityCurve,
-  calcPeriodPnL, buildCalendarData
+  calcWinRate,
+  calcProfitFactor,
+  calcExpectancy,
+  calcSharpeRatio,
+  calcMaxDrawdown,
+  calcEquityCurve,
+  calcPeriodPnL,
+  buildCalendarData,
+  calcProfitLoss,
+  calcRiskReward
 } = require('../utils/analytics');
 
 // Helper: update user's currentCapital
@@ -104,7 +111,35 @@ exports.bulkImportTrades = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'Maximum 2000 trades per import' });
     }
 
-    const docs = trades.map(t => ({ ...t, user: req.user._id }));
+    const docs = trades.map(t => {
+  const profitLoss = calcProfitLoss(
+    Number(t.entryPrice),
+    Number(t.exitPrice),
+    Number(t.quantity || 1),
+    t.direction
+  );
+
+  return {
+    ...t,
+    user: req.user._id,
+    profitLoss,
+    result:
+      Math.abs(profitLoss) < 0.01
+        ? 'BE'
+        : profitLoss > 0
+        ? 'WIN'
+        : 'LOSS',
+    riskRewardRatio:
+      t.stopLoss
+        ? calcRiskReward(
+            Number(t.entryPrice),
+            Number(t.exitPrice),
+            Number(t.stopLoss),
+            t.direction
+          )
+        : 0
+  };
+});
 
     // insertMany with ordered:false so partial success is possible
     let imported = 0, failed = 0;
