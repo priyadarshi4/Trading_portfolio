@@ -60,7 +60,10 @@ function parseExcelRows(file) {
             errors.push(`Row ${i+2}: entryPrice, exitPrice, quantity must be numbers`);
             return;
           }
-
+          if (qty <= 0) {
+            errors.push(`Row ${i + 2}: quantity must be greater than 0`);
+            return;
+          }
           const trade = {
             date:        cells[col('date')],
             symbol:      (cells[col('symbol')] || '').toUpperCase(),
