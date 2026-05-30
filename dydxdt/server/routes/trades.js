@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const {
-  getTrades, createTrade, getTrade, updateTrade, deleteTrade,
+  getTrades, createTrade, getTrade, updateTrade, deleteTrade, bulkImportTrades,
   getSummary, getByStrategy, getBySymbol, getMonthly, getBySession
 } = require('../controllers/tradesController');
 const { protect } = require('../middleware/auth');
@@ -16,6 +16,7 @@ router.get('/stats/by-session',  getBySession);
 
 // CRUD
 router.route('/').get(getTrades).post(createTrade);
+router.post('/bulk', bulkImportTrades);
 router.route('/:id').get(getTrade).put(updateTrade).delete(deleteTrade);
 
 module.exports = router;

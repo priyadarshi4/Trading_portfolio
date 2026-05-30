@@ -76,6 +76,22 @@ export const useDeleteTrade = () => {
   });
 };
 
+export const useBulkImportTrades = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (trades) => api.post('/trades/bulk', { trades }).then(r => r.data),
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: ['trades'] });
+      qc.invalidateQueries({ queryKey: ['trades-summary'] });
+      qc.invalidateQueries({ queryKey: ['trades-by-strategy'] });
+      qc.invalidateQueries({ queryKey: ['trades-by-symbol'] });
+      qc.invalidateQueries({ queryKey: ['trades-monthly'] });
+      toast.success(`${data.imported} trades imported ✓`);
+    },
+    onError: err => toast.error(err.response?.data?.message || 'Bulk import failed'),
+  });
+};
+
 // ── STRATEGIES ───────────────────────────────────────────────────────────────
 
 export const useStrategies = () => useQuery({

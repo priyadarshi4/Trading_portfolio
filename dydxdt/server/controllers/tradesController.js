@@ -93,6 +93,35 @@ exports.deleteTrade = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
+// @POST /api/trades/bulk
+exports.bulkImportTrades = async (req, res, next) => {
+  try {
+    const { trades } = req.body;
+    if (!Array.isArray(trades) || trades.length === 0) {
+      return res.status(400).json({ success: false, message: 'trades array is required' });
+    }
+    if (trades.length > 2000) {
+      return res.status(400).json({ success: false, message: 'Maximum 2000 trades per import' });
+    }
+
+    const docs = trades.map(t => ({ ...t, user: req.user._id }));
+
+    // insertMany with ordered:false so partial success is possible
+    let imported = 0, failed = 0;
+    try {
+      const result = await Trade.insertMany(docs, { ordered: false });
+      imported = result.length;
+    } catch (bulkErr) {
+      // mongoose BulkWriteError — some succeeded, some failed
+      imported = bulkErr.result?.nInserted || 0;
+      failed   = docs.length - imported;
+    }
+
+    await syncCapital(req.user._id);
+    res.status(201).json({ success: true, imported, failed });
+  } catch (err) { next(err); }
+};
+
 // @GET /api/trades/stats/summary
 exports.getSummary = async (req, res, next) => {
   try {
