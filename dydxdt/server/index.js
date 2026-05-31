@@ -41,6 +41,7 @@ app.use('/api/journal',    require('./routes/journal'));
 app.use('/api/analytics',  require('./routes/analytics'));
 app.use('/api/settings',   require('./routes/settings'));
 app.use('/api/export',     require('./routes/export'));
+app.use('/api',            require('./routes/market/index'));
 
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'ok', timestamp: new Date() }));

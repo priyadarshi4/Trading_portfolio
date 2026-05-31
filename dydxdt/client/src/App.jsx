@@ -2,22 +2,29 @@ import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import useAuthStore from './store/authStore';
 
-import Layout          from './components/layout/Layout';
-import LoginPage       from './pages/LoginPage';
-import RegisterPage    from './pages/RegisterPage';
-import Dashboard       from './pages/Dashboard';
-import TradesPage      from './pages/TradesPage';
-import AddTrade        from './pages/AddTrade';
-import EditTrade       from './pages/EditTrade';
-import AnalyticsPage   from './pages/AnalyticsPage';
-import EquityPage      from './pages/EquityPage';
-import JournalPage     from './pages/JournalPage';
-import StrategiesPage  from './pages/StrategiesPage';
-import RiskPage        from './pages/RiskPage';
-import CalendarPage    from './pages/CalendarPage';
-import SettingsPage    from './pages/SettingsPage';
-import ReportsPage     from './pages/ReportsPage';
-import StatsPage       from './pages/StatsPage';
+import Layout            from './components/layout/Layout';
+import LoginPage         from './pages/LoginPage';
+import RegisterPage      from './pages/RegisterPage';
+import Dashboard         from './pages/Dashboard';
+import TradesPage        from './pages/TradesPage';
+import AddTrade          from './pages/AddTrade';
+import EditTrade         from './pages/EditTrade';
+import AnalyticsPage     from './pages/AnalyticsPage';
+import EquityPage        from './pages/EquityPage';
+import JournalPage       from './pages/JournalPage';
+import StrategiesPage    from './pages/StrategiesPage';
+import RiskPage          from './pages/RiskPage';
+import CalendarPage      from './pages/CalendarPage';
+import SettingsPage      from './pages/SettingsPage';
+import ReportsPage       from './pages/ReportsPage';
+import StatsPage         from './pages/StatsPage';
+
+// Market Analysis Module
+import MarketAnalysis    from './pages/market/MarketAnalysis';
+import Scanner           from './pages/market/Scanner';
+import Signals           from './pages/market/Signals';
+import EconomicCalendar  from './pages/market/EconomicCalendar';
+import WatchlistPage     from './pages/market/WatchlistPage';
 
 const PrivateRoute = ({ children }) => {
   const { isAuthenticated } = useAuthStore();
@@ -41,6 +48,7 @@ export default function App() {
         <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
 
         <Route element={<PrivateRoute><Layout /></PrivateRoute>}>
+          {/* Trading Journal */}
           <Route path="/dashboard"       element={<Dashboard />} />
           <Route path="/trades"          element={<TradesPage />} />
           <Route path="/trades/add"      element={<AddTrade />} />
@@ -54,6 +62,13 @@ export default function App() {
           <Route path="/reports"         element={<ReportsPage />} />
           <Route path="/stats"           element={<StatsPage />} />
           <Route path="/settings"        element={<SettingsPage />} />
+
+          {/* Market Analysis Module */}
+          <Route path="/market"          element={<MarketAnalysis />} />
+          <Route path="/scanner"         element={<Scanner />} />
+          <Route path="/signals"         element={<Signals />} />
+          <Route path="/calendar/economic" element={<EconomicCalendar />} />
+          <Route path="/watchlist"       element={<WatchlistPage />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
