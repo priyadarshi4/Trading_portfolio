@@ -1,12 +1,25 @@
+// ============================================================
+// MODIFIED FILE: server/index.js
+// Changes:
+//   1. Import http module and setupSocket
+//   2. Create http.createServer(app)
+//   3. Register /api/club route
+//   4. app.get('io') setter for controllers
+//   5. Listen on httpServer instead of app
+// ============================================================
+
 require('dotenv').config();
+const http    = require('http');
 const express = require('express');
-const cors = require('cors');
-const helmet = require('helmet');
-const morgan = require('morgan');
+const cors    = require('cors');
+const helmet  = require('helmet');
+const morgan  = require('morgan');
 const rateLimit = require('express-rate-limit');
-const connectDB = require('./utils/db');
+const connectDB   = require('./utils/db');
+const setupSocket = require('./utils/socket');   // ← NEW
 
 const app = express();
+const httpServer = http.createServer(app);       // ← NEW
 
 // Connect to MongoDB
 connectDB();
@@ -42,6 +55,7 @@ app.use('/api/analytics',  require('./routes/analytics'));
 app.use('/api/settings',   require('./routes/settings'));
 app.use('/api/export',     require('./routes/export'));
 app.use('/api',            require('./routes/market/index'));
+app.use('/api/club',       require('./routes/club/index'));    // ← NEW
 
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'ok', timestamp: new Date() }));
@@ -59,5 +73,10 @@ app.use((err, req, res, next) => {
   });
 });
 
+// Setup Socket.IO and attach io to app                        ← NEW
+const io = setupSocket(httpServer);
+app.set('io', io);
+
+// Use httpServer instead of app.listen                        ← NEW
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 Dy/Dx/Dt server running on port ${PORT}`));
+httpServer.listen(PORT, () => console.log(`🚀 Dy/Dx/Dt server running on port ${PORT}`));

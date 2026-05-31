@@ -1,3 +1,8 @@
+// ============================================================
+// MODIFIED FILE: client/src/App.jsx
+// Changes: Add TradingClub and TraderProfile imports + routes
+// ============================================================
+
 import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import useAuthStore from './store/authStore';
@@ -25,6 +30,10 @@ import Scanner           from './pages/market/Scanner';
 import Signals           from './pages/market/Signals';
 import EconomicCalendar  from './pages/market/EconomicCalendar';
 import WatchlistPage     from './pages/market/WatchlistPage';
+
+// ← NEW: Trading Club Module
+import TradingClub       from './pages/club/TradingClub';
+import TraderProfile     from './pages/club/TraderProfile';
 
 const PrivateRoute = ({ children }) => {
   const { isAuthenticated } = useAuthStore();
@@ -64,11 +73,16 @@ export default function App() {
           <Route path="/settings"        element={<SettingsPage />} />
 
           {/* Market Analysis Module */}
-          <Route path="/market"          element={<MarketAnalysis />} />
-          <Route path="/scanner"         element={<Scanner />} />
-          <Route path="/signals"         element={<Signals />} />
+          <Route path="/market"            element={<MarketAnalysis />} />
+          <Route path="/scanner"           element={<Scanner />} />
+          <Route path="/signals"           element={<Signals />} />
           <Route path="/calendar/economic" element={<EconomicCalendar />} />
-          <Route path="/watchlist"       element={<WatchlistPage />} />
+          <Route path="/watchlist"         element={<WatchlistPage />} />
+
+          {/* ← NEW: Trading Club Module */}
+          <Route path="/club"                 element={<TradingClub />} />
+          <Route path="/club/profile/:userId" element={<TraderProfile />} />
+          <Route path="/club/profile"         element={<TraderProfile />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/dashboard" replace />} />

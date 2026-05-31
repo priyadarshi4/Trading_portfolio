@@ -1,3 +1,9 @@
+// ============================================================
+// MODIFIED FILE: client/src/components/layout/Layout.jsx
+// Change: Add Trading Club section to NAV_SECTIONS
+// Find the 'SYSTEM' section and insert COMMUNITY before it
+// ============================================================
+
 import { useState, useEffect } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -23,11 +29,19 @@ const NAV_SECTIONS = [
   {
     label: 'MARKET ANALYSIS',
     items: [
-      { to: '/market',            icon: '📊', label: 'MARKET CHART'   },
-      { to: '/signals',           icon: '⚡', label: 'SIGNALS'        },
-      { to: '/scanner',           icon: '🔍', label: 'SCANNER'        },
-      { to: '/watchlist',         icon: '☆',  label: 'WATCHLIST'      },
-      { to: '/calendar/economic', icon: '📅', label: 'ECO CALENDAR'   },
+      { to: '/market',            icon: '📊', label: 'MARKET CHART'  },
+      { to: '/signals',           icon: '⚡', label: 'SIGNALS'       },
+      { to: '/scanner',           icon: '🔍', label: 'SCANNER'       },
+      { to: '/watchlist',         icon: '☆',  label: 'WATCHLIST'     },
+      { to: '/calendar/economic', icon: '📅', label: 'ECO CALENDAR'  },
+    ],
+  },
+  // ← NEW SECTION
+  {
+    label: 'COMMUNITY',
+    items: [
+      { to: '/club',         icon: '📢', label: 'TRADING CLUB'  },
+      { to: '/club/profile', icon: '👤', label: 'MY PROFILE'    },
     ],
   },
   {
@@ -56,7 +70,6 @@ export default function Layout() {
   const navigate                  = useNavigate();
   const location                  = useLocation();
 
-  // Auto-collapse on market page (needs full width)
   useEffect(() => {
     if (location.pathname === '/market') setCollapsed(true);
   }, [location.pathname]);
@@ -65,6 +78,9 @@ export default function Layout() {
     const t = setInterval(() => setTick(v => (v + 1) % 60), 1000);
     return () => clearInterval(t);
   }, []);
+
+  // Trading Club needs full height (no padding)
+  const isFullHeight = ['/market', '/club'].some(p => location.pathname.startsWith(p));
 
   const initials = user?.name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'DX';
 
@@ -108,7 +124,6 @@ export default function Layout() {
         <nav className="flex-1 py-1 overflow-y-auto" style={{ scrollbarWidth: 'none' }}>
           {NAV_SECTIONS.map(section => (
             <div key={section.label}>
-              {/* Section label */}
               {!collapsed && (
                 <div className="px-3 pt-3 pb-1 text-[7px] font-bold tracking-[0.3em] uppercase"
                   style={{ color: 'rgba(255,255,255,0.12)', fontFamily: 'monospace' }}>
@@ -119,7 +134,7 @@ export default function Layout() {
 
               {section.items.map(item => (
                 <NavLink key={item.to} to={item.to}
-                  end={item.to === '/trades' || item.to === '/calendar'}
+                  end={['/trades','/calendar','/club'].includes(item.to)}
                   style={{ textDecoration: 'none' }}
                 >
                   {({ isActive }) => (
@@ -170,11 +185,9 @@ export default function Layout() {
         {/* Top bar */}
         <div className="flex items-center gap-3 px-4 py-2 border-b flex-shrink-0"
           style={{ background: 'rgba(5,5,5,0.98)', borderColor: 'rgba(255,255,255,0.05)', minHeight: 40 }}>
-
           <button onClick={() => setCollapsed(v => !v)} className="text-sm flex-shrink-0"
             style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'monospace' }}>☰</button>
 
-          {/* Live ticker */}
           <div className="flex items-center gap-5 overflow-x-auto flex-1" style={{ scrollbarWidth: 'none' }}>
             {TICKERS.map(t => (
               <div key={t.sym} className="flex items-center gap-1.5 flex-shrink-0">
@@ -185,7 +198,6 @@ export default function Layout() {
             ))}
           </div>
 
-          {/* Clock */}
           <div className="flex items-center gap-1.5 flex-shrink-0">
             <div className="w-1.5 h-1.5 rounded-full animate-blink" style={{ background: '#e8ff00' }} />
             <span className="text-[8px]" style={{ color: 'rgba(255,255,255,0.22)', fontFamily: 'monospace' }}>
@@ -194,8 +206,8 @@ export default function Layout() {
           </div>
         </div>
 
-        {/* Page content */}
-        <main className={`flex-1 overflow-y-auto hatching-bg ${location.pathname === '/market' ? '' : 'p-5'}`}>
+        {/* Page content — no padding for full-height pages */}
+        <main className={`flex-1 overflow-y-auto ${isFullHeight ? '' : 'p-5 hatching-bg'}`}>
           <motion.div
             key={location.pathname}
             initial={{ opacity: 0, y: 6 }}
