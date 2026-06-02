@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { useClubPosts, useClubSearch } from '../../api/club/hooks';
 import useClubStore from '../../store/clubStore';
@@ -25,25 +25,35 @@ const CATEGORIES = [
 
 const SORT_OPTIONS = [
   { value: 'latest',    label: 'LATEST'    },
-  { value: 'popular',   label: 'POPULAR'   },
+  { value: 'popular',   label: 'HOT'       },
   { value: 'discussed', label: 'DISCUSSED' },
 ];
 
 export default function TradingClubPage() {
   const {
-    activeCategory, activeSort, activeFeed, searchQuery, searchOpen,
-    setCategory, setSort, setFeed, setSearch, toggleSearch,
+    activeCategory, activeSort, activeFeed,
+    setCategory, setSort, setFeed,
     openCreateModal, connectSocket, disconnectSocket,
   } = useClubStore();
 
   const [activeCommentPost, setActiveCommentPost] = useState(null);
+  const [searchInput, setSearchInput]   = useState('');
+  const [searchOpen,  setSearchOpen]    = useState(false);
+  const [showTrending, setShowTrending] = useState(false);
+  const [showCategories, setShowCategories] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
-  // Map "Saved Posts" to saved endpoint, "My Posts" passes category
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+
   const isSaved = activeCategory === 'Saved Posts';
-
   const queryParams = {
     category: activeCategory === 'All Posts' || isSaved ? '' : activeCategory,
-    sort:     activeSort,
+    sort: activeSort,
     ...(activeFeed === 'followed' ? { feed: 'followed' } : {}),
   };
 
@@ -52,101 +62,102 @@ export default function TradingClubPage() {
     { enabled: !isSaved }
   );
 
-  // Search
-  const [searchInput, setSearchInput] = useState('');
   const { data: searchResults, isFetching: searchFetching } = useClubSearch(
     searchInput, searchInput.length >= 2
   );
 
-  // Socket
-  useEffect(() => {
-    connectSocket();
-    return () => disconnectSocket();
-  }, []);
+  useEffect(() => { connectSocket(); return () => disconnectSocket(); }, []);
 
   // Infinite scroll
   const loaderRef = useRef(null);
-  const observer  = useRef(null);
   useEffect(() => {
-    if (observer.current) observer.current.disconnect();
-    observer.current = new IntersectionObserver(entries => {
+    const obs = new IntersectionObserver(entries => {
       if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) fetchNextPage();
     });
-    if (loaderRef.current) observer.current.observe(loaderRef.current);
-    return () => observer.current?.disconnect();
+    if (loaderRef.current) obs.observe(loaderRef.current);
+    return () => obs.disconnect();
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const allPosts = data?.pages?.flatMap(p => p.data) || [];
 
   return (
-    <div className="flex h-full animate-fade-in" style={{ height: 'calc(100vh - 84px)' }}>
+    <div className="flex h-full" style={{ height: isMobile ? 'calc(100vh - 116px)' : 'calc(100vh - 84px)' }}>
 
-      {/* LEFT — Category sidebar */}
-      <div className="flex-shrink-0 border-r overflow-y-auto"
-        style={{ width: 200, background: 'rgba(5,5,5,0.98)', borderColor: 'rgba(255,255,255,0.05)' }}>
-        <div className="p-3 border-b" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
-          <div className="font-display text-lg leading-none" style={{
-            background: 'linear-gradient(135deg, #e8ff00, #a78bfa)',
-            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-            letterSpacing: '0.04em',
-          }}>TRADING CLUB</div>
-          <div className="text-[7px] tracking-[0.3em] uppercase mt-0.5" style={{ color: 'rgba(255,255,255,0.2)', fontFamily: 'monospace' }}>
-            COMMUNITY FEED
+      {/* ── LEFT CATEGORY SIDEBAR — desktop only ── */}
+      {!isMobile && (
+        <div className="flex-shrink-0 border-r overflow-y-auto"
+          style={{ width: 200, background: 'rgba(5,5,5,0.98)', borderColor: 'rgba(255,255,255,0.05)' }}>
+          <div className="p-3 border-b" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
+            <div className="font-display text-lg" style={{
+              background: 'linear-gradient(135deg, #e8ff00, #a78bfa)',
+              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', letterSpacing: '0.04em',
+            }}>TRADING CLUB</div>
+            <div className="text-[7px] tracking-[0.3em] uppercase mt-0.5" style={{ color: 'rgba(255,255,255,0.2)', fontFamily: 'monospace' }}>COMMUNITY FEED</div>
           </div>
-        </div>
-
-        {/* Feed toggle */}
-        <div className="p-2 border-b" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
-          <div className="flex gap-1">
-            {[['all','ALL'],['followed','FOLLOWING']].map(([val, label]) => (
-              <button key={val} onClick={() => setFeed(val)}
-                className="flex-1 py-1 text-[8px] font-bold transition-all"
+          <div className="p-2 border-b" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
+            <div className="flex gap-1">
+              {[['all','ALL'],['followed','FOLLOWING']].map(([val, label]) => (
+                <button key={val} onClick={() => setFeed(val)}
+                  className="flex-1 py-1 text-[8px] font-bold transition-all"
+                  style={{
+                    fontFamily: 'monospace',
+                    background: activeFeed === val ? 'rgba(232,255,0,0.1)' : 'transparent',
+                    color:      activeFeed === val ? '#e8ff00' : 'rgba(255,255,255,0.25)',
+                    border:     `1px solid ${activeFeed === val ? 'rgba(232,255,0,0.2)' : 'rgba(255,255,255,0.06)'}`,
+                  }}>{label}</button>
+              ))}
+            </div>
+          </div>
+          <nav className="py-1">
+            {CATEGORIES.map(cat => (
+              <button key={cat.label} onClick={() => setCategory(cat.label)}
+                className="w-full flex items-center gap-2.5 px-3 py-2 text-left transition-all duration-100"
                 style={{
-                  fontFamily: 'monospace',
-                  background: activeFeed === val ? 'rgba(232,255,0,0.1)' : 'transparent',
-                  color:      activeFeed === val ? '#e8ff00' : 'rgba(255,255,255,0.25)',
-                  border:     `1px solid ${activeFeed === val ? 'rgba(232,255,0,0.2)' : 'rgba(255,255,255,0.06)'}`,
-                }}>{label}</button>
+                  background:  activeCategory === cat.label ? 'rgba(232,255,0,0.06)' : 'transparent',
+                  borderLeft:  `2px solid ${activeCategory === cat.label ? '#e8ff00' : 'transparent'}`,
+                }}>
+                <span className="text-sm flex-shrink-0">{cat.icon}</span>
+                <span className="text-[9px] font-bold tracking-wide uppercase truncate"
+                  style={{ fontFamily: 'monospace', color: activeCategory === cat.label ? '#e8ff00' : 'rgba(255,255,255,0.3)' }}>
+                  {cat.label}
+                </span>
+              </button>
             ))}
-          </div>
+          </nav>
         </div>
+      )}
 
-        {/* Category list */}
-        <nav className="py-1">
-          {CATEGORIES.map(cat => (
-            <button key={cat.label}
-              onClick={() => setCategory(cat.label)}
-              className="w-full flex items-center gap-2.5 px-3 py-2 text-left transition-all duration-100"
-              style={{
-                background:  activeCategory === cat.label ? 'rgba(232,255,0,0.06)' : 'transparent',
-                borderLeft:  `2px solid ${activeCategory === cat.label ? '#e8ff00' : 'transparent'}`,
-              }}>
-              <span className="text-sm flex-shrink-0">{cat.icon}</span>
-              <span className="text-[9px] font-bold tracking-wide uppercase truncate"
-                style={{ fontFamily: 'monospace', color: activeCategory === cat.label ? '#e8ff00' : 'rgba(255,255,255,0.3)' }}>
-                {cat.label}
-              </span>
-            </button>
-          ))}
-        </nav>
-      </div>
-
-      {/* CENTER — Feed */}
+      {/* ── CENTER FEED ── */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Feed toolbar */}
-        <div className="flex items-center gap-3 px-4 py-2.5 border-b flex-shrink-0"
+
+        {/* Toolbar */}
+        <div className="flex items-center gap-2 px-3 sm:px-4 py-2 border-b flex-shrink-0"
           style={{ background: 'rgba(5,5,5,0.98)', borderColor: 'rgba(255,255,255,0.05)' }}>
 
-          {/* Category label */}
-          <div className="font-display text-base" style={{ color: '#e8ff00', letterSpacing: '0.05em' }}>
-            {activeCategory.toUpperCase()}
-          </div>
+          {/* Mobile: category button */}
+          {isMobile && (
+            <button onClick={() => setShowCategories(v => !v)}
+              className="flex items-center gap-1 px-2 py-1.5 text-[9px] font-bold border flex-shrink-0"
+              style={{
+                fontFamily: 'monospace', borderColor: 'rgba(232,255,0,0.2)', color: '#e8ff00',
+                background: 'rgba(232,255,0,0.05)',
+              }}>
+              ◈ {activeCategory === 'All Posts' ? 'ALL' : activeCategory.slice(0,8)}
+            </button>
+          )}
 
-          {/* Sort tabs */}
-          <div className="flex gap-0.5 ml-2">
+          {/* Desktop: category label */}
+          {!isMobile && (
+            <div className="font-display text-base" style={{ color: '#e8ff00', letterSpacing: '0.05em' }}>
+              {activeCategory.toUpperCase()}
+            </div>
+          )}
+
+          {/* Sort */}
+          <div className="flex gap-0.5 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
             {SORT_OPTIONS.map(s => (
               <button key={s.value} onClick={() => setSort(s.value)}
-                className="px-2.5 py-1 text-[8px] font-bold transition-all"
+                className="px-2 py-1 text-[8px] font-bold transition-all flex-shrink-0"
                 style={{
                   fontFamily: 'monospace',
                   background: activeSort === s.value ? 'rgba(232,255,0,0.1)' : 'transparent',
@@ -156,50 +167,62 @@ export default function TradingClubPage() {
             ))}
           </div>
 
-          <div className="ml-auto flex items-center gap-2">
-            {/* Search toggle */}
-            <button onClick={toggleSearch}
-              className="px-3 py-1.5 text-[9px] font-bold border transition-all"
-              style={{
-                fontFamily: 'monospace',
-                borderColor: searchOpen ? '#a78bfa' : 'rgba(255,255,255,0.08)',
-                color:       searchOpen ? '#a78bfa' : 'rgba(255,255,255,0.3)',
-                background:  searchOpen ? 'rgba(167,139,250,0.08)' : 'transparent',
-              }}>🔍 SEARCH</button>
-
-            {/* Share Idea FAB */}
+          <div className="ml-auto flex items-center gap-1.5 flex-shrink-0">
+            <button onClick={() => setSearchOpen(v => !v)}
+              className="w-8 h-8 flex items-center justify-center border transition-all"
+              style={{ borderColor: searchOpen ? '#a78bfa' : 'rgba(255,255,255,0.08)', color: searchOpen ? '#a78bfa' : 'rgba(255,255,255,0.4)' }}>
+              🔍
+            </button>
+            {isMobile && (
+              <button onClick={() => setShowTrending(v => !v)}
+                className="w-8 h-8 flex items-center justify-center border transition-all"
+                style={{ borderColor: showTrending ? '#e8ff00' : 'rgba(255,255,255,0.08)', color: showTrending ? '#e8ff00' : 'rgba(255,255,255,0.4)' }}>
+                🔥
+              </button>
+            )}
             <button onClick={() => openCreateModal()}
-              className="px-4 py-1.5 text-[9px] font-bold transition-all hover:scale-105"
+              className="px-3 py-1.5 text-[9px] font-bold transition-all hover:scale-105"
               style={{ background: '#e8ff00', color: '#000', fontFamily: 'monospace' }}>
-              + SHARE IDEA
+              {isMobile ? '+' : '+ SHARE IDEA'}
             </button>
           </div>
         </div>
 
+        {/* Mobile: category horizontal scroll */}
+        {isMobile && showCategories && (
+          <div className="flex gap-2 px-3 py-2 overflow-x-auto border-b" style={{ borderColor: 'rgba(255,255,255,0.05)', scrollbarWidth: 'none' }}>
+            {CATEGORIES.map(cat => (
+              <button key={cat.label} onClick={() => { setCategory(cat.label); setShowCategories(false); }}
+                className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 text-[9px] font-bold border transition-all"
+                style={{
+                  fontFamily: 'monospace',
+                  background:  activeCategory === cat.label ? 'rgba(232,255,0,0.08)' : 'transparent',
+                  borderColor: activeCategory === cat.label ? 'rgba(232,255,0,0.3)' : 'rgba(255,255,255,0.08)',
+                  color:       activeCategory === cat.label ? '#e8ff00' : 'rgba(255,255,255,0.4)',
+                }}>
+                {cat.icon} {cat.label}
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* Search bar */}
         {searchOpen && (
-          <div className="px-4 py-2 border-b" style={{ borderColor: 'rgba(255,255,255,0.05)', background: 'rgba(5,5,5,0.98)' }}>
+          <div className="px-3 sm:px-4 py-2 border-b" style={{ borderColor: 'rgba(255,255,255,0.05)', background: 'rgba(5,5,5,0.98)' }}>
             <input
               className="w-full px-3 py-2 text-[11px] outline-none border"
               style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(167,139,250,0.2)', color: '#fff', fontFamily: 'monospace' }}
-              placeholder="Search posts, symbols, strategies, tags... (e.g. NIFTY, Breakout, RSI)"
+              placeholder="Search posts, symbols, strategies... (e.g. NIFTY, Breakout)"
               value={searchInput}
               onChange={e => setSearchInput(e.target.value)}
               autoFocus
             />
-            {searchInput.length >= 2 && (
-              <div className="mt-1 text-[8px]" style={{ color: 'rgba(255,255,255,0.2)', fontFamily: 'monospace' }}>
-                {searchFetching ? 'Searching...' : `${(searchResults?.posts?.length || 0) + (searchResults?.users?.length || 0)} results`}
-              </div>
-            )}
           </div>
         )}
 
-        {/* Feed content */}
-        <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth: 'thin' }}>
-          <div className="max-w-2xl mx-auto px-4 py-4 space-y-4">
-
-            {/* Search results */}
+        {/* Feed */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="max-w-2xl mx-auto px-3 sm:px-4 py-3 sm:py-4 space-y-3 sm:space-y-4">
             {searchOpen && searchInput.length >= 2 ? (
               <>
                 {searchResults?.users?.length > 0 && (
@@ -217,7 +240,7 @@ export default function TradingClubPage() {
                     </div>
                   </div>
                 )}
-                {searchResults?.posts?.map(post => (
+                {(searchResults?.posts || []).map(post => (
                   <PostCard key={post._id} post={post} onOpenComments={setActiveCommentPost} />
                 ))}
                 {!searchFetching && !searchResults?.posts?.length && !searchResults?.users?.length && (
@@ -226,40 +249,27 @@ export default function TradingClubPage() {
                   </div>
                 )}
               </>
+            ) : isLoading ? <Spinner /> : allPosts.length === 0 ? (
+              <div className="text-center py-16 space-y-3">
+                <div className="text-4xl">📊</div>
+                <div className="font-display text-xl" style={{ color: 'rgba(255,255,255,0.15)' }}>NO POSTS YET</div>
+                <button onClick={() => openCreateModal()}
+                  className="px-5 py-2 text-[9px] font-bold mt-2"
+                  style={{ background: '#e8ff00', color: '#000', fontFamily: 'monospace' }}>
+                  + SHARE FIRST IDEA
+                </button>
+              </div>
             ) : (
               <>
-                {/* Normal feed */}
-                {isLoading ? (
-                  <Spinner />
-                ) : allPosts.length === 0 ? (
-                  <div className="text-center py-16 space-y-3">
-                    <div className="text-4xl">📊</div>
-                    <div className="font-display text-xl" style={{ color: 'rgba(255,255,255,0.15)' }}>NO POSTS YET</div>
-                    <div className="text-[9px]" style={{ color: 'rgba(255,255,255,0.15)', fontFamily: 'monospace' }}>
-                      Be the first to share a trading idea
-                    </div>
-                    <button onClick={() => openCreateModal()}
-                      className="px-5 py-2 text-[9px] font-bold mt-2"
-                      style={{ background: '#e8ff00', color: '#000', fontFamily: 'monospace' }}>
-                      + SHARE FIRST IDEA
-                    </button>
-                  </div>
-                ) : (
-                  allPosts.map(post => (
-                    <PostCard key={post._id} post={post} onOpenComments={setActiveCommentPost} />
-                  ))
-                )}
-
-                {/* Infinite scroll loader */}
+                {allPosts.map(post => (
+                  <PostCard key={post._id} post={post} onOpenComments={setActiveCommentPost} />
+                ))}
                 <div ref={loaderRef} className="py-4 text-center">
                   {isFetchingNextPage && (
-                    <div className="w-5 h-5 border border-t-acid rounded-full animate-spin mx-auto"
-                      style={{ borderColor: 'rgba(232,255,0,0.15)', borderTopColor: '#e8ff00' }} />
+                    <div className="w-5 h-5 border border-t-acid rounded-full animate-spin mx-auto" style={{ borderColor: 'rgba(232,255,0,0.15)', borderTopColor: '#e8ff00' }} />
                   )}
                   {!hasNextPage && allPosts.length > 0 && (
-                    <div className="text-[8px] tracking-widest" style={{ color: 'rgba(255,255,255,0.1)', fontFamily: 'monospace' }}>
-                      — END OF FEED —
-                    </div>
+                    <div className="text-[8px] tracking-widest" style={{ color: 'rgba(255,255,255,0.1)', fontFamily: 'monospace' }}>— END OF FEED —</div>
                   )}
                 </div>
               </>
@@ -268,28 +278,49 @@ export default function TradingClubPage() {
         </div>
       </div>
 
-      {/* RIGHT — Trending sidebar (hidden when comments open) */}
-      <AnimatePresence mode="wait">
-        {activeCommentPost ? (
-          <CommentsPanel
-            key="comments"
-            postId={activeCommentPost}
-            onClose={() => setActiveCommentPost(null)}
-          />
-        ) : (
-          <div key="trending" className="flex-shrink-0 border-l overflow-hidden"
-            style={{ width: 240, background: 'rgba(5,5,5,0.98)', borderColor: 'rgba(255,255,255,0.05)' }}>
-            <div className="px-3 py-3 border-b" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
-              <div className="text-[8px] font-bold tracking-[0.25em] uppercase" style={{ color: 'rgba(255,255,255,0.2)', fontFamily: 'monospace' }}>
-                TRENDING NOW
+      {/* ── RIGHT PANEL — desktop only ── */}
+      {!isMobile && (
+        <AnimatePresence mode="wait">
+          {activeCommentPost ? (
+            <CommentsPanel key="comments" postId={activeCommentPost} onClose={() => setActiveCommentPost(null)} />
+          ) : (
+            <div key="trending" className="flex-shrink-0 border-l overflow-hidden"
+              style={{ width: 240, background: 'rgba(5,5,5,0.98)', borderColor: 'rgba(255,255,255,0.05)' }}>
+              <div className="px-3 py-3 border-b" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
+                <div className="text-[8px] font-bold tracking-[0.25em] uppercase" style={{ color: 'rgba(255,255,255,0.2)', fontFamily: 'monospace' }}>TRENDING NOW</div>
               </div>
+              <TrendingSidebar />
             </div>
-            <TrendingSidebar />
+          )}
+        </AnimatePresence>
+      )}
+
+      {/* Mobile trending sheet */}
+      <AnimatePresence>
+        {isMobile && showTrending && (
+          <>
+            <div className="fixed inset-0 z-40" style={{ background: 'rgba(0,0,0,0.6)' }} onClick={() => setShowTrending(false)} />
+            <div className="fixed bottom-16 right-0 z-50 border-l border-t overflow-y-auto"
+              style={{ width: '85vw', maxHeight: '70vh', background: 'rgba(5,5,5,0.99)', borderColor: 'rgba(255,255,255,0.08)' }}>
+              <div className="px-3 py-2.5 border-b flex items-center justify-between" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+                <div className="text-[8px] font-bold tracking-[0.25em] uppercase" style={{ color: 'rgba(255,255,255,0.2)', fontFamily: 'monospace' }}>🔥 TRENDING</div>
+                <button onClick={() => setShowTrending(false)} style={{ color: 'rgba(255,255,255,0.3)' }}>✕</button>
+              </div>
+              <TrendingSidebar />
+            </div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Mobile comments full-screen */}
+      <AnimatePresence>
+        {isMobile && activeCommentPost && (
+          <div className="fixed inset-0 z-50 flex flex-col" style={{ background: '#030303' }}>
+            <CommentsPanel postId={activeCommentPost} onClose={() => setActiveCommentPost(null)} />
           </div>
         )}
       </AnimatePresence>
 
-      {/* Create/Edit post modal */}
       <CreatePostModal />
     </div>
   );

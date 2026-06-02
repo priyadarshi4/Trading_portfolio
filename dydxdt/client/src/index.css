@@ -3,11 +3,24 @@
 @tailwind utilities;
 
 @layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
   body {
     background: #030303;
     color: #fff;
     font-family: 'Space Mono', monospace;
+    /* Prevent rubber-band scroll on iOS */
+    overscroll-behavior: none;
   }
+  /* Better tap highlighting on mobile */
+  * {
+    -webkit-tap-highlight-color: rgba(232,255,0,0.1);
+  }
+  /* Hide scrollbars but keep functionality */
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 }
 
 @layer utilities {
@@ -19,9 +32,6 @@
   .text-glow-violet { text-shadow: 0 0 20px rgba(167,139,250,0.5); }
   .text-glow-danger { text-shadow: 0 0 20px rgba(255,51,102,0.5); }
 
-  .noise-bg {
-    position: relative;
-  }
   .noise-bg::after {
     content: '';
     position: fixed;
@@ -41,22 +51,23 @@
     z-index: 9998;
     pointer-events: none;
     background: repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 2px,
-      rgba(0,0,0,0.5) 2px,
-      rgba(0,0,0,0.5) 4px
+      0deg, transparent, transparent 2px,
+      rgba(0,0,0,0.5) 2px, rgba(0,0,0,0.5) 4px
     );
     opacity: 0.03;
+  }
+
+  /* Reduced on mobile for performance */
+  @media (max-width: 768px) {
+    .noise-bg::after { opacity: 0.015; }
+    .scanlines::before { opacity: 0.02; }
   }
 
   .hatching-bg {
     background-image: repeating-linear-gradient(
       45deg,
-      rgba(232,255,0,0.015) 0px,
-      rgba(232,255,0,0.015) 1px,
-      transparent 1px,
-      transparent 14px
+      rgba(232,255,0,0.015) 0px, rgba(232,255,0,0.015) 1px,
+      transparent 1px, transparent 14px
     );
   }
 
@@ -64,8 +75,19 @@
     transition: box-shadow 0.2s ease, border-color 0.2s ease;
   }
   .card-glow:hover {
-    box-shadow: 0 0 20px rgba(232,255,0,0.06);
-    border-color: rgba(232,255,0,0.15) !important;
+    box-shadow: 0 0 20px rgba(232,255,0,0.05);
+    border-color: rgba(232,255,0,0.12) !important;
+  }
+
+  /* On mobile, disable hover effects (they stick on touch) */
+  @media (max-width: 768px) {
+    .card-glow:hover {
+      box-shadow: none;
+      border-color: rgba(255,255,255,0.07) !important;
+    }
+    .card-glow:active {
+      box-shadow: 0 0 16px rgba(232,255,0,0.08);
+    }
   }
 
   .btn-acid {
@@ -77,9 +99,14 @@
     text-transform: uppercase;
     font-size: 0.7rem;
     transition: transform 0.15s, opacity 0.15s;
+    /* Ensure minimum touch target */
+    min-height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
-  .btn-acid:hover { opacity: 0.9; transform: scale(1.02); }
-  .btn-acid:active { transform: scale(0.98); }
+  .btn-acid:hover  { opacity: 0.9; transform: scale(1.02); }
+  .btn-acid:active { transform: scale(0.97); }
 
   .input-dark {
     background: rgba(255,255,255,0.03);
@@ -91,9 +118,16 @@
     outline: none;
     transition: border-color 0.15s;
     width: 100%;
+    /* iOS fix — prevents auto-zoom on input focus */
+    font-size: max(16px, 0.8rem);
   }
   .input-dark:focus { border-color: rgba(232,255,0,0.4); }
   .input-dark::placeholder { color: rgba(255,255,255,0.2); }
+
+  /* Restore 0.8rem visually while keeping 16px for zoom prevention */
+  @media (min-width: 768px) {
+    .input-dark { font-size: 0.8rem; }
+  }
 
   .label-mono {
     display: block;
@@ -105,4 +139,22 @@
     color: rgba(255,255,255,0.3);
     margin-bottom: 0.4rem;
   }
+
+  /* Safe area support for notched phones */
+  .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+  .safe-top    { padding-top:    env(safe-area-inset-top);    }
+
+  /* Better scrolling on iOS */
+  .scroll-smooth-ios {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+
+  /* Mobile table scroll container */
+  .table-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .table-scroll::-webkit-scrollbar { height: 3px; }
+  .table-scroll::-webkit-scrollbar-thumb { background: rgba(232,255,0,0.2); }
 }

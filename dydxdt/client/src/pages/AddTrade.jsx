@@ -28,14 +28,12 @@ export default function AddTrade() {
     symbol: '', direction: 'LONG', date: new Date().toISOString().split('T')[0],
     entryPrice: '', exitPrice: '', stopLoss: '', takeProfit: '', quantity: '',
     timeframe: 'H1', session: 'London', marketType: 'Forex',
-    strategyUsed: '', notes: '', tags: '', mood: '',
-    followedRules: '',
+    strategyUsed: '', notes: '', tags: '', followedRules: '',
   });
   const [rr, setRR] = useState(null);
 
   useEffect(() => {
-    const r = calcRR(form.entryPrice, form.exitPrice, form.stopLoss, form.direction);
-    setRR(r);
+    setRR(calcRR(form.entryPrice, form.exitPrice, form.stopLoss, form.direction));
   }, [form.entryPrice, form.exitPrice, form.stopLoss, form.direction]);
 
   const set = (k) => (e) => setForm(p => ({ ...p, [k]: e.target?.value ?? e }));
@@ -44,13 +42,12 @@ export default function AddTrade() {
     e.preventDefault();
     const payload = {
       ...form,
-      entryPrice:  parseFloat(form.entryPrice),
-      exitPrice:   parseFloat(form.exitPrice),
-      stopLoss:    form.stopLoss    ? parseFloat(form.stopLoss)    : undefined,
-      takeProfit:  form.takeProfit  ? parseFloat(form.takeProfit)  : undefined,
-      quantity:    parseFloat(form.quantity),
-      tags:        form.tags.split(',').map(t => t.trim()).filter(Boolean),
-      mood:        form.mood        ? parseInt(form.mood)          : undefined,
+      entryPrice: parseFloat(form.entryPrice),
+      exitPrice:  parseFloat(form.exitPrice),
+      stopLoss:   form.stopLoss   ? parseFloat(form.stopLoss)   : undefined,
+      takeProfit: form.takeProfit ? parseFloat(form.takeProfit) : undefined,
+      quantity:   parseFloat(form.quantity),
+      tags:       form.tags.split(',').map(t => t.trim()).filter(Boolean),
       followedRules: form.followedRules === 'true' ? true : form.followedRules === 'false' ? false : undefined,
     };
     await createTrade.mutateAsync(payload);
@@ -60,51 +57,58 @@ export default function AddTrade() {
   const rrColor = rr === null ? 'rgba(255,255,255,0.3)' : rr >= 2 ? '#00ffb3' : rr >= 1 ? '#e8ff00' : '#ff3366';
 
   return (
-    <div className="space-y-5 animate-fade-in max-w-2xl">
+    <div className="space-y-4 animate-fade-in max-w-2xl mx-auto">
       <PageHeader eyebrow="// TRADE INTAKE" title="LOG NEW TRADE" color="#00ffb3" />
 
       <form onSubmit={handleSubmit} className="space-y-4">
+
+        {/* Symbol + Date */}
         <Card>
-          <div className="grid grid-cols-2 gap-4">
-            <Input label="SYMBOL *" placeholder="XAUUSD" value={form.symbol}
-              onChange={e => setForm(p => ({ ...p, symbol: e.target.value.toUpperCase() }))} required />
+          <div className="grid grid-cols-2 gap-3">
+            <Input label="SYMBOL *" placeholder="XAUUSD"
+              value={form.symbol}
+              onChange={e => setForm(p => ({ ...p, symbol: e.target.value.toUpperCase() }))}
+              required />
             <Input label="DATE *" type="date" value={form.date} onChange={set('date')} required />
           </div>
         </Card>
 
+        {/* Direction */}
         <Card>
           <label className="label-mono">DIRECTION *</label>
           <DirectionToggle value={form.direction} onChange={v => setForm(p => ({ ...p, direction: v }))} />
         </Card>
 
+        {/* Prices */}
         <Card>
-          <div className="grid grid-cols-2 gap-4 mb-4">
+          <div className="grid grid-cols-2 gap-3 mb-4">
             <Input label="ENTRY PRICE *" type="number" step="any" placeholder="0.00000"
               value={form.entryPrice} onChange={set('entryPrice')} required />
             <Input label="EXIT PRICE *"  type="number" step="any" placeholder="0.00000"
               value={form.exitPrice}  onChange={set('exitPrice')}  required />
             <Input label="STOP LOSS"     type="number" step="any" placeholder="0.00000"
-              value={form.stopLoss}   onChange={set('stopLoss')}   />
+              value={form.stopLoss}   onChange={set('stopLoss')} />
             <Input label="TAKE PROFIT"   type="number" step="any" placeholder="0.00000"
               value={form.takeProfit} onChange={set('takeProfit')} />
           </div>
 
-          {/* Live RR display */}
+          {/* Live RR */}
           <div className="flex items-center justify-between px-4 py-3 border" style={{
             background: rr !== null ? `rgba(${rr >= 1 ? '232,255,0' : '255,51,102'},0.04)` : 'rgba(255,255,255,0.02)',
-            borderColor: rr !== null ? `rgba(${rr >= 1 ? '232,255,0' : '255,51,102'},0.2)` : 'rgba(255,255,255,0.06)'
+            borderColor: rr !== null ? `rgba(${rr >= 1 ? '232,255,0' : '255,51,102'},0.2)` : 'rgba(255,255,255,0.06)',
           }}>
             <div className="text-[9px] tracking-[0.2em] uppercase" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'monospace' }}>
-              CALCULATED RISK / REWARD
+              RISK / REWARD
             </div>
             <div className="font-display text-2xl" style={{ color: rrColor }}>
-              {rr !== null ? `${rr.toFixed(2)}R` : '– – –'}
+              {rr !== null ? `${rr.toFixed(2)}R` : '— —'}
             </div>
           </div>
         </Card>
 
+        {/* Qty + Timeframe + Session + Market */}
         <Card>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-3">
             <Input label="QUANTITY / LOTS *" type="number" step="any" placeholder="0.10"
               value={form.quantity} onChange={set('quantity')} required />
             <Select label="TIMEFRAME" value={form.timeframe} onChange={set('timeframe')}>
@@ -119,29 +123,30 @@ export default function AddTrade() {
           </div>
         </Card>
 
+        {/* Strategy + Notes */}
         <Card>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-3 mb-4">
             <Select label="STRATEGY" value={form.strategyUsed} onChange={set('strategyUsed')}>
               <option value="">— SELECT —</option>
               {(strategies || []).map(s => <option key={s._id} value={s.name}>{s.name}</option>)}
             </Select>
             <Select label="FOLLOWED RULES?" value={form.followedRules} onChange={set('followedRules')}>
-              <option value="">— SELECT —</option>
+              <option value="">—</option>
               <option value="true">YES ✓</option>
               <option value="false">NO ✗</option>
             </Select>
           </div>
-          <div className="mt-4">
-            <Textarea label="TRADE NOTES" rows={3} placeholder="Confluences, what did you see, why this trade..."
-              value={form.notes} onChange={set('notes')} />
-          </div>
-          <div className="mt-4">
-            <Input label="TAGS (comma-separated)" placeholder="ict, fvg, london-session"
+          <Textarea label="TRADE NOTES" rows={3}
+            placeholder="Confluences, what you saw, why this trade..."
+            value={form.notes} onChange={set('notes')} />
+          <div className="mt-3">
+            <Input label="TAGS (comma-sep)" placeholder="ict, fvg, london-session"
               value={form.tags} onChange={set('tags')} />
           </div>
         </Card>
 
-        <div className="flex gap-3">
+        {/* Submit */}
+        <div className="flex gap-3 pb-4">
           <Btn type="submit" disabled={createTrade.isPending} className="flex-1 py-3">
             {createTrade.isPending ? 'LOGGING...' : 'RECORD TRADE →'}
           </Btn>

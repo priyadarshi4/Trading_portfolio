@@ -2,28 +2,28 @@ import { motion } from 'framer-motion';
 
 // ── KPI CARD ─────────────────────────────────────────────────────────────────
 export const KPICard = ({ label, value, sub, color = '#e8ff00', prefix = '', suffix = '', loading }) => (
-  <div className="relative overflow-hidden p-4 card-glow border"
+  <div className="relative overflow-hidden p-3 sm:p-4 card-glow border"
     style={{ background: 'rgba(10,10,10,0.9)', borderColor: 'rgba(255,255,255,0.06)', borderLeft: `3px solid ${color}` }}>
     {loading ? (
       <div className="animate-pulse space-y-2">
-        <div className="h-2 w-20 rounded" style={{ background: 'rgba(255,255,255,0.05)' }} />
-        <div className="h-6 w-28 rounded" style={{ background: 'rgba(255,255,255,0.05)' }} />
+        <div className="h-2 w-16 rounded" style={{ background: 'rgba(255,255,255,0.05)' }} />
+        <div className="h-5 w-24 rounded" style={{ background: 'rgba(255,255,255,0.05)' }} />
       </div>
     ) : (
       <>
-        <div className="text-[9px] font-bold tracking-[0.2em] uppercase mb-1" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'monospace' }}>{label}</div>
-        <div className="text-2xl font-display leading-none" style={{ color, letterSpacing: '0.03em', textShadow: `0 0 20px ${color}30` }}>
+        <div className="text-[8px] sm:text-[9px] font-bold tracking-[0.2em] uppercase mb-1" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'monospace' }}>{label}</div>
+        <div className="text-lg sm:text-2xl font-display leading-none" style={{ color, letterSpacing: '0.03em', textShadow: `0 0 20px ${color}30` }}>
           {prefix}{value}{suffix}
         </div>
-        {sub && <div className="text-[10px] mt-1" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'monospace' }}>{sub}</div>}
+        {sub && <div className="text-[8px] mt-1 hidden sm:block" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'monospace' }}>{sub}</div>}
       </>
     )}
-    <div className="absolute -right-4 -bottom-4 w-16 h-16 rounded-full opacity-10" style={{ background: color, filter: 'blur(20px)' }} />
+    <div className="absolute -right-4 -bottom-4 w-14 h-14 rounded-full opacity-10" style={{ background: color, filter: 'blur(20px)' }} />
   </div>
 );
 
 // ── GLITCH HEADING ────────────────────────────────────────────────────────────
-export const Glitch = ({ text, size = 'text-4xl', color = '#e8ff00' }) => (
+export const Glitch = ({ text, size = 'text-3xl sm:text-4xl', color = '#e8ff00' }) => (
   <span className={`font-display ${size} inline-block`} style={{
     color, letterSpacing: '0.05em',
     textShadow: `2px 0 0 rgba(255,0,100,0.4), -2px 0 0 rgba(0,200,255,0.4)`
@@ -32,18 +32,18 @@ export const Glitch = ({ text, size = 'text-4xl', color = '#e8ff00' }) => (
 
 // ── PAGE HEADER ───────────────────────────────────────────────────────────────
 export const PageHeader = ({ eyebrow, title, color = '#e8ff00', action }) => (
-  <div className="flex items-end justify-between pb-4 border-b" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
+  <div className="flex items-start sm:items-end justify-between gap-3 pb-4 border-b" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
     <div>
-      {eyebrow && <div className="text-[9px] tracking-[0.3em] uppercase mb-1" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'monospace' }}>{eyebrow}</div>}
-      <Glitch text={title} size="text-4xl" color={color} />
+      {eyebrow && <div className="text-[8px] tracking-[0.3em] uppercase mb-1" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'monospace' }}>{eyebrow}</div>}
+      <Glitch text={title} color={color} />
     </div>
-    {action}
+    {action && <div className="flex-shrink-0">{action}</div>}
   </div>
 );
 
 // ── CARD ──────────────────────────────────────────────────────────────────────
 export const Card = ({ children, className = '', accent }) => (
-  <div className={`border p-4 card-glow ${className}`}
+  <div className={`border p-3 sm:p-4 card-glow ${className}`}
     style={{
       background: 'rgba(10,10,10,0.9)',
       borderColor: 'rgba(255,255,255,0.06)',
@@ -55,12 +55,12 @@ export const Card = ({ children, className = '', accent }) => (
 
 // ── CARD LABEL ────────────────────────────────────────────────────────────────
 export const CardLabel = ({ children }) => (
-  <div className="text-[9px] font-bold tracking-[0.25em] uppercase mb-3" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'monospace' }}>
+  <div className="text-[8px] sm:text-[9px] font-bold tracking-[0.25em] uppercase mb-3" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'monospace' }}>
     // {children}
   </div>
 );
 
-// ── BUTTON ────────────────────────────────────────────────────────────────────
+// ── BUTTON ─────────────────────────────────────────────────────────────────────
 export const Btn = ({ children, onClick, variant = 'acid', disabled, type = 'button', className = '' }) => {
   const styles = {
     acid:    { background: '#e8ff00', color: '#000' },
@@ -70,14 +70,14 @@ export const Btn = ({ children, onClick, variant = 'acid', disabled, type = 'but
   };
   return (
     <button type={type} onClick={onClick} disabled={disabled}
-      className={`px-4 py-2 text-[10px] font-bold tracking-[0.15em] uppercase transition-all duration-150 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed ${className}`}
+      className={`px-3 sm:px-4 py-2 text-[10px] font-bold tracking-[0.15em] uppercase transition-all duration-150 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed min-h-[36px] ${className}`}
       style={{ fontFamily: 'monospace', ...styles[variant] }}>
       {children}
     </button>
   );
 };
 
-// ── BADGE ─────────────────────────────────────────────────────────────────────
+// ── BADGE ──────────────────────────────────────────────────────────────────────
 export const Badge = ({ children, color }) => {
   const map = {
     WIN:   { bg: 'rgba(232,255,0,0.1)',    text: '#e8ff00',  border: 'rgba(232,255,0,0.2)' },
@@ -88,18 +88,18 @@ export const Badge = ({ children, color }) => {
   };
   const s = map[children] || map[color] || map.BE;
   return (
-    <span className="px-2 py-0.5 text-[9px] font-bold tracking-wider"
+    <span className="px-1.5 sm:px-2 py-0.5 text-[8px] sm:text-[9px] font-bold tracking-wider"
       style={{ background: s.bg, color: s.text, border: `1px solid ${s.border}`, fontFamily: 'monospace' }}>
       {children}
     </span>
   );
 };
 
-// ── INPUT ─────────────────────────────────────────────────────────────────────
+// ── INPUT ──────────────────────────────────────────────────────────────────────
 export const Input = ({ label, error, className = '', ...props }) => (
   <div className={className}>
     {label && <label className="label-mono">{label}</label>}
-    <input className="input-dark" {...props} />
+    <input className="input-dark" style={{ minHeight: 40 }} {...props} />
     {error && <p className="text-[9px] mt-1" style={{ color: '#ff3366', fontFamily: 'monospace' }}>{error}</p>}
   </div>
 );
@@ -115,12 +115,12 @@ export const Textarea = ({ label, error, className = '', ...props }) => (
 export const Select = ({ label, error, children, className = '', ...props }) => (
   <div className={className}>
     {label && <label className="label-mono">{label}</label>}
-    <select className="input-dark" style={{ background: '#0a0a0a' }} {...props}>{children}</select>
+    <select className="input-dark" style={{ background: '#0a0a0a', minHeight: 40 }} {...props}>{children}</select>
     {error && <p className="text-[9px] mt-1" style={{ color: '#ff3366', fontFamily: 'monospace' }}>{error}</p>}
   </div>
 );
 
-// ── CUSTOM TOOLTIP (Recharts) ─────────────────────────────────────────────────
+// ── CHART TOOLTIP ─────────────────────────────────────────────────────────────
 export const ChartTooltip = ({ active, payload, label, formatter }) => {
   if (!active || !payload?.length) return null;
   return (
@@ -137,26 +137,26 @@ export const ChartTooltip = ({ active, payload, label, formatter }) => {
   );
 };
 
-// ── LOADING SPINNER ───────────────────────────────────────────────────────────
+// ── SPINNER ───────────────────────────────────────────────────────────────────
 export const Spinner = () => (
-  <div className="flex items-center justify-center py-20">
+  <div className="flex items-center justify-center py-16">
     <div className="w-8 h-8 border-2 border-t-acid rounded-full animate-spin" style={{ borderColor: 'rgba(232,255,0,0.15)', borderTopColor: '#e8ff00' }} />
   </div>
 );
 
 // ── EMPTY STATE ───────────────────────────────────────────────────────────────
 export const Empty = ({ message = 'No data yet', icon = '◈' }) => (
-  <div className="flex flex-col items-center justify-center py-20 gap-3">
+  <div className="flex flex-col items-center justify-center py-16 gap-3">
     <div className="text-3xl" style={{ color: 'rgba(255,255,255,0.1)' }}>{icon}</div>
-    <div className="text-[10px] tracking-widest uppercase" style={{ color: 'rgba(255,255,255,0.2)', fontFamily: 'monospace' }}>{message}</div>
+    <div className="text-[9px] tracking-widest uppercase text-center" style={{ color: 'rgba(255,255,255,0.2)', fontFamily: 'monospace' }}>{message}</div>
   </div>
 );
 
 // ── STAT ROW ──────────────────────────────────────────────────────────────────
 export const StatRow = ({ label, value, color }) => (
   <div className="flex items-center justify-between py-2 border-b" style={{ borderColor: 'rgba(255,255,255,0.04)' }}>
-    <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'monospace' }}>{label}</span>
-    <span className="text-[11px] font-bold" style={{ color: color || '#fff', fontFamily: 'monospace' }}>{value}</span>
+    <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'monospace' }}>{label}</span>
+    <span className="text-[10px] font-bold" style={{ color: color || '#fff', fontFamily: 'monospace' }}>{value}</span>
   </div>
 );
 
@@ -165,7 +165,7 @@ export const DirectionToggle = ({ value, onChange }) => (
   <div className="flex gap-2">
     {['LONG', 'SHORT'].map(d => (
       <button key={d} type="button" onClick={() => onChange(d)}
-        className="flex-1 py-2 text-[10px] font-bold tracking-widest uppercase transition-all"
+        className="flex-1 py-3 text-[10px] font-bold tracking-widest uppercase transition-all min-h-[44px]"
         style={{
           fontFamily: 'monospace',
           background: value === d ? (d === 'LONG' ? 'rgba(0,255,179,0.12)' : 'rgba(255,51,102,0.12)') : 'rgba(255,255,255,0.02)',
@@ -189,15 +189,25 @@ export const ProgressBar = ({ value, max = 100, color = '#e8ff00' }) => (
 export const Modal = ({ open, onClose, title, children }) => {
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.8)' }} onClick={onClose}>
-      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.15 }}
-        className="w-full max-w-lg border p-6" style={{ background: '#080808', borderColor: 'rgba(232,255,0,0.15)' }}
-        onClick={e => e.stopPropagation()}>
-        <div className="flex items-center justify-between mb-5">
-          <div className="font-display text-xl" style={{ color: '#e8ff00', letterSpacing: '0.05em' }}>{title}</div>
-          <button onClick={onClose} className="text-sm hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'monospace' }}>✕</button>
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
+      style={{ background: 'rgba(0,0,0,0.8)' }} onClick={onClose}>
+      <motion.div
+        initial={{ opacity: 0, y: 40 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.2 }}
+        className="w-full sm:max-w-lg border sm:rounded-none max-h-[90vh] overflow-y-auto"
+        style={{ background: '#080808', borderColor: 'rgba(232,255,0,0.15)', borderTopLeftRadius: 12, borderTopRightRadius: 12 }}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Drag handle — mobile */}
+        <div className="flex justify-center pt-3 pb-1 sm:hidden">
+          <div className="w-10 h-1 rounded-full" style={{ background: 'rgba(255,255,255,0.15)' }} />
         </div>
-        {children}
+        <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+          <div className="font-display text-xl" style={{ color: '#e8ff00', letterSpacing: '0.05em' }}>{title}</div>
+          <button onClick={onClose} className="text-sm p-1 hover:text-white transition-colors min-w-[32px] min-h-[32px] flex items-center justify-center" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'monospace' }}>✕</button>
+        </div>
+        <div className="p-5">{children}</div>
       </motion.div>
     </div>
   );
