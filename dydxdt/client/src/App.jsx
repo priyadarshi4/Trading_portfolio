@@ -1,6 +1,6 @@
 // ============================================================
 // MODIFIED FILE: client/src/App.jsx
-// Changes: Add TradingClub and TraderProfile imports + routes
+// Change: Add StrategyMarketplace import + route under /club/strategies
 // ============================================================
 
 import { useEffect } from 'react';
@@ -31,9 +31,12 @@ import Signals           from './pages/market/Signals';
 import EconomicCalendar  from './pages/market/EconomicCalendar';
 import WatchlistPage     from './pages/market/WatchlistPage';
 
-// ← NEW: Trading Club Module
+// Trading Club Module
 import TradingClub       from './pages/club/TradingClub';
 import TraderProfile     from './pages/club/TraderProfile';
+
+// ← NEW: Strategy Marketplace
+import StrategyMarketplace from './pages/club/StrategyMarketplace';
 
 const PrivateRoute = ({ children }) => {
   const { isAuthenticated } = useAuthStore();
@@ -58,19 +61,19 @@ export default function App() {
 
         <Route element={<PrivateRoute><Layout /></PrivateRoute>}>
           {/* Trading Journal */}
-          <Route path="/dashboard"       element={<Dashboard />} />
-          <Route path="/trades"          element={<TradesPage />} />
-          <Route path="/trades/add"      element={<AddTrade />} />
-          <Route path="/trades/:id/edit" element={<EditTrade />} />
-          <Route path="/analytics"       element={<AnalyticsPage />} />
-          <Route path="/equity"          element={<EquityPage />} />
-          <Route path="/journal"         element={<JournalPage />} />
-          <Route path="/strategies"      element={<StrategiesPage />} />
-          <Route path="/risk"            element={<RiskPage />} />
-          <Route path="/calendar"        element={<CalendarPage />} />
-          <Route path="/reports"         element={<ReportsPage />} />
-          <Route path="/stats"           element={<StatsPage />} />
-          <Route path="/settings"        element={<SettingsPage />} />
+          <Route path="/dashboard"         element={<Dashboard />} />
+          <Route path="/trades"            element={<TradesPage />} />
+          <Route path="/trades/add"        element={<AddTrade />} />
+          <Route path="/trades/:id/edit"   element={<EditTrade />} />
+          <Route path="/analytics"         element={<AnalyticsPage />} />
+          <Route path="/equity"            element={<EquityPage />} />
+          <Route path="/journal"           element={<JournalPage />} />
+          <Route path="/strategies"        element={<StrategiesPage />} />
+          <Route path="/risk"              element={<RiskPage />} />
+          <Route path="/calendar"          element={<CalendarPage />} />
+          <Route path="/reports"           element={<ReportsPage />} />
+          <Route path="/stats"             element={<StatsPage />} />
+          <Route path="/settings"          element={<SettingsPage />} />
 
           {/* Market Analysis Module */}
           <Route path="/market"            element={<MarketAnalysis />} />
@@ -79,10 +82,13 @@ export default function App() {
           <Route path="/calendar/economic" element={<EconomicCalendar />} />
           <Route path="/watchlist"         element={<WatchlistPage />} />
 
-          {/* ← NEW: Trading Club Module */}
-          <Route path="/club"                 element={<TradingClub />} />
-          <Route path="/club/profile/:userId" element={<TraderProfile />} />
-          <Route path="/club/profile"         element={<TraderProfile />} />
+          {/* Trading Club Module */}
+          <Route path="/club"                   element={<TradingClub />} />
+          <Route path="/club/profile/:userId"   element={<TraderProfile />} />
+          <Route path="/club/profile"           element={<TraderProfile />} />
+
+          {/* ← NEW: Strategy Marketplace */}
+          <Route path="/club/strategies"        element={<StrategyMarketplace />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/dashboard" replace />} />

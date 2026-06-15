@@ -7,7 +7,6 @@ const calcWinRate = (trades) => {
   const wins = trades.filter(t => t.profitLoss > 0).length;
   return parseFloat(((wins / trades.length) * 100).toFixed(2));
 };
-
 const calcProfitFactor = (trades) => {
   const grossProfit = trades.filter(t => t.profitLoss > 0).reduce((s, t) => s + t.profitLoss, 0);
   const grossLoss   = Math.abs(trades.filter(t => t.profitLoss < 0).reduce((s, t) => s + t.profitLoss, 0));

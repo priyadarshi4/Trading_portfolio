@@ -1,3 +1,8 @@
+// ============================================================
+// MODIFIED FILE: client/src/components/layout/Layout.jsx
+// Change: Add "TRADING STRATEGIES" item to COMMUNITY nav section
+// ============================================================
+
 import { useState, useEffect } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -33,8 +38,9 @@ const NAV_SECTIONS = [
   {
     label: 'COMMUNITY',
     items: [
-      { to: '/club',         icon: '📢', label: 'TRADING CLUB'  },
-      { to: '/club/profile', icon: '👤', label: 'MY PROFILE'    },
+      { to: '/club',              icon: '📢', label: 'TRADING CLUB'       },
+      { to: '/club/strategies',   icon: '📈', label: 'STRATEGIES'         }, // ← NEW
+      { to: '/club/profile',      icon: '👤', label: 'MY PROFILE'         },
     ],
   },
   {
@@ -45,33 +51,32 @@ const NAV_SECTIONS = [
   },
 ];
 
-// Bottom nav — 5 most used items for mobile
+// Bottom nav for mobile — 5 most important items
 const BOTTOM_NAV = [
-  { to: '/dashboard',  icon: '◈', label: 'Home'      },
-  { to: '/trades',     icon: '▤', label: 'Trades'     },
-  { to: '/trades/add', icon: '+', label: 'Log'        },
-  { to: '/market',     icon: '📊', label: 'Market'    },
-  { to: '/club',       icon: '📢', label: 'Club'      },
+  { to: '/dashboard',       icon: '◈', label: 'Home'       },
+  { to: '/trades',          icon: '▤', label: 'Trades'      },
+  { to: '/trades/add',      icon: '+', label: 'Log'         },
+  { to: '/club/strategies', icon: '📈', label: 'Strategies' }, // ← NEW (replaced Market)
+  { to: '/club',            icon: '📢', label: 'Club'       },
 ];
 
 const TICKERS = [
-  { sym: 'XAUUSD', val: '2,318.40', chg: '+1.2%', up: true },
-  { sym: 'NQ',     val: '17,842',   chg: '+0.8%', up: true },
+  { sym: 'XAUUSD', val: '2,318.40', chg: '+1.2%', up: true  },
+  { sym: 'NQ',     val: '17,842',   chg: '+0.8%', up: true  },
   { sym: 'EURUSD', val: '1.0892',   chg: '-0.3%', up: false },
-  { sym: 'GBPUSD', val: '1.2734',   chg: '+0.5%', up: true },
-  { sym: 'BTCUSD', val: '67,240',   chg: '+2.1%', up: true },
+  { sym: 'GBPUSD', val: '1.2734',   chg: '+0.5%', up: true  },
+  { sym: 'BTCUSD', val: '67,240',   chg: '+2.1%', up: true  },
   { sym: 'USDJPY', val: '157.34',   chg: '-0.2%', up: false },
 ];
 
 export default function Layout() {
-  const [collapsed,    setCollapsed]    = useState(false);
-  const [mobileOpen,   setMobileOpen]   = useState(false);
-  const [isMobile,     setIsMobile]     = useState(false);
+  const [collapsed,  setCollapsed]  = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [isMobile,   setIsMobile]   = useState(false);
   const { user, logout } = useAuthStore();
   const navigate         = useNavigate();
   const location         = useLocation();
 
-  // Detect mobile
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
     check();
@@ -79,19 +84,19 @@ export default function Layout() {
     return () => window.removeEventListener('resize', check);
   }, []);
 
-  // Auto-collapse sidebar on market page (desktop), close drawer on mobile nav
   useEffect(() => {
     if (!isMobile && location.pathname === '/market') setCollapsed(true);
     if (isMobile) setMobileOpen(false);
   }, [location.pathname, isMobile]);
 
+  // Pages that need edge-to-edge layout (no padding)
   const isFullHeight = ['/market', '/club'].some(p => location.pathname.startsWith(p));
+
   const initials = user?.name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'DX';
 
-  // ── SIDEBAR CONTENT (shared between desktop + mobile drawer) ─────────────
+  // ── Shared sidebar content ──────────────────────────────────────────────────
   const SidebarContent = () => (
     <>
-      {/* Logo */}
       <div className="px-4 py-4 border-b flex-shrink-0" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
         <div className="flex items-center justify-between">
           <div>
@@ -101,24 +106,19 @@ export default function Layout() {
             }}>Dy/Dx/Dt</div>
             <div className="text-[8px] tracking-[0.28em] uppercase mt-0.5" style={{ color: 'rgba(255,255,255,0.18)', fontFamily: 'monospace' }}>TRADER ANALYTICS</div>
           </div>
-          {/* Close button — mobile drawer only */}
-          {isMobile && (
+          {isMobile ? (
             <button onClick={() => setMobileOpen(false)} className="text-lg" style={{ color: 'rgba(255,255,255,0.3)' }}>✕</button>
-          )}
-          {/* Collapse button — desktop only */}
-          {!isMobile && !collapsed && (
+          ) : !collapsed ? (
             <button onClick={() => setCollapsed(true)} className="text-xs hover:text-white transition-colors" style={{ color: 'rgba(255,255,255,0.18)' }}>◀</button>
-          )}
+          ) : null}
         </div>
       </div>
 
-      {/* Status pill */}
       <div className="px-4 py-2 flex items-center gap-2 border-b" style={{ borderColor: 'rgba(255,255,255,0.04)' }}>
         <div className="w-1.5 h-1.5 rounded-full animate-blink" style={{ background: '#00ffb3', boxShadow: '0 0 6px #00ffb3' }} />
         <span className="text-[8px] tracking-widest" style={{ color: 'rgba(0,255,179,0.5)', fontFamily: 'monospace' }}>REPLAY MODE</span>
       </div>
 
-      {/* Nav sections */}
       <nav className="flex-1 py-2 overflow-y-auto" style={{ scrollbarWidth: 'none' }}>
         {NAV_SECTIONS.map(section => (
           <div key={section.label}>
@@ -154,7 +154,6 @@ export default function Layout() {
         ))}
       </nav>
 
-      {/* User footer */}
       <div className="border-t p-3 flex-shrink-0" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
         <div className="flex items-center gap-3">
           <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center text-[10px] font-black"
@@ -176,7 +175,7 @@ export default function Layout() {
   return (
     <div className="flex h-screen overflow-hidden noise-bg scanlines" style={{ background: '#030303' }}>
 
-      {/* ── DESKTOP SIDEBAR ─────────────────────────────────────────────────── */}
+      {/* ── DESKTOP SIDEBAR ── */}
       {!isMobile && (
         <motion.aside
           animate={{ width: collapsed ? 52 : 220 }}
@@ -185,7 +184,6 @@ export default function Layout() {
           style={{ background: 'rgba(5,5,5,0.98)', borderRight: '1px solid rgba(255,255,255,0.05)' }}
         >
           {collapsed ? (
-            // Icon-only collapsed sidebar
             <>
               <div className="px-2 py-4 border-b flex-shrink-0" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
                 <button onClick={() => setCollapsed(false)} className="w-full text-center font-display text-base" style={{ color: '#e8ff00' }}>dx</button>
@@ -224,24 +222,18 @@ export default function Layout() {
         </motion.aside>
       )}
 
-      {/* ── MOBILE DRAWER ───────────────────────────────────────────────────── */}
+      {/* ── MOBILE DRAWER ── */}
       <AnimatePresence>
         {isMobile && mobileOpen && (
           <>
-            {/* Backdrop */}
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               className="fixed inset-0 z-40"
               style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(2px)' }}
               onClick={() => setMobileOpen(false)}
             />
-            {/* Drawer panel */}
             <motion.aside
-              initial={{ x: '-100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '-100%' }}
+              initial={{ x: '-100%' }} animate={{ x: 0 }} exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 28, stiffness: 300 }}
               className="fixed top-0 left-0 h-full z-50 flex flex-col"
               style={{ width: 260, background: 'rgba(5,5,5,0.99)', borderRight: '1px solid rgba(255,255,255,0.08)' }}
@@ -252,22 +244,17 @@ export default function Layout() {
         )}
       </AnimatePresence>
 
-      {/* ── MAIN ────────────────────────────────────────────────────────────── */}
+      {/* ── MAIN ── */}
       <div className="flex-1 flex flex-col overflow-hidden min-w-0">
 
         {/* Top bar */}
         <div className="flex items-center gap-2 px-3 py-2 border-b flex-shrink-0"
           style={{ background: 'rgba(5,5,5,0.98)', borderColor: 'rgba(255,255,255,0.05)', minHeight: 44 }}>
 
-          {/* Hamburger — always visible */}
-          <button
-            onClick={() => isMobile ? setMobileOpen(true) : setCollapsed(v => !v)}
+          <button onClick={() => isMobile ? setMobileOpen(true) : setCollapsed(v => !v)}
             className="flex-shrink-0 w-8 h-8 flex items-center justify-center text-base transition-colors hover:text-white"
-            style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'monospace' }}>
-            ☰
-          </button>
+            style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'monospace' }}>☰</button>
 
-          {/* Ticker — scrollable on mobile */}
           <div className="flex items-center gap-4 overflow-x-auto flex-1 min-w-0" style={{ scrollbarWidth: 'none' }}>
             {TICKERS.map(t => (
               <div key={t.sym} className="flex items-center gap-1 flex-shrink-0">
@@ -278,7 +265,6 @@ export default function Layout() {
             ))}
           </div>
 
-          {/* Clock — hide on very small screens */}
           <div className="hidden sm:flex items-center gap-1.5 flex-shrink-0">
             <div className="w-1.5 h-1.5 rounded-full animate-blink" style={{ background: '#e8ff00' }} />
             <span className="text-[8px]" style={{ color: 'rgba(255,255,255,0.22)', fontFamily: 'monospace' }}>
@@ -304,7 +290,7 @@ export default function Layout() {
         </main>
       </div>
 
-      {/* ── MOBILE BOTTOM NAV ───────────────────────────────────────────────── */}
+      {/* ── MOBILE BOTTOM NAV ── */}
       {isMobile && (
         <nav className="fixed bottom-0 left-0 right-0 z-30 border-t"
           style={{ background: 'rgba(5,5,5,0.98)', borderColor: 'rgba(255,255,255,0.08)', paddingBottom: 'env(safe-area-inset-bottom)' }}>
@@ -318,10 +304,9 @@ export default function Layout() {
                   <div className="flex flex-col items-center justify-center py-2 gap-0.5"
                     style={{ background: isActive ? 'rgba(232,255,0,0.06)' : 'transparent', borderTop: `2px solid ${isActive ? '#e8ff00' : 'transparent'}` }}>
                     <span className="text-lg leading-none">{item.icon}</span>
-                    <span className="text-[8px] font-bold tracking-wide" style={{
-                      fontFamily: 'monospace',
-                      color: isActive ? '#e8ff00' : 'rgba(255,255,255,0.3)',
-                    }}>{item.label}</span>
+                    <span className="text-[8px] font-bold tracking-wide" style={{ fontFamily: 'monospace', color: isActive ? '#e8ff00' : 'rgba(255,255,255,0.3)' }}>
+                      {item.label}
+                    </span>
                   </div>
                 )}
               </NavLink>
